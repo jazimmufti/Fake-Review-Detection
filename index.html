@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Review Authenticity Analyzer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f3f4f8;
+  margin: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+h1 {
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 36px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  text-align: left;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+textarea {
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  background: #f9fafb;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.warning {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 6px;
+  display: none;
+}
+
+select {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  color: #9ca3af;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 18px;
+  border-radius: 10px;
+  border: none;
+  background: #111827;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  background: #262d38;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+button:disabled:hover {
+  background: #9ca3af;
+}
+
+.loader {
+  border: 2px solid #d1d5db;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.result {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  visibility: hidden;
+}
+
+.result.genuine {
+  border: 1.5px solid #22c55e;
+  background: #ecfdf5;
+}
+
+.result.fake {
+  border: 1.5px solid #ef4444;
+  background: #fef2f2;
+}
+
+.result h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.result.genuine h3 {
+  color: #166534;
+}
+
+.result.fake h3 {
+  color: #991b1b;
+}
+
+.confidence {
+  font-size: 14px;
+  margin: 0;
+}
+
+.conf-value {
+  font-weight: 700;
+}
+
+.result.genuine .confidence {
+  color: #166534;
+}
+
+.result.fake .confidence {
+  color: #991b1b;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.ai-analysis {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  visibility: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+.ai-analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ai-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #6366f1,
+    #8b5cf6
+  );
+  color: white;
+  font-size: 18px;
+}
+
+.ai-analysis-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+
+.ai-analysis-content {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 15px;
+
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.7;
+
+  border-left: 4px solid #6366f1;
+}
+
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #6b7280;
+  font-style: italic;
+}
+
+
+.ai-loading::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  border-top-color: #6366f1;
+
+  animation: spin 1s linear infinite;
+}
+
+
+@keyframes fadeIn {
+
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Review Authenticity Detector</h1>
+  <div class="subtitle">Powered by machine learning and deep learning to detect fake and genuine reviews</div>
+
+  <div class="card">
+
+    <label>Review Text</label>
+  <textarea
+    id="reviewInput"
+    aria-label="Review Text"
+    placeholder="Enter your review...">
+  </textarea>    
+  <div class="char-count" id="charCount">0 characters</div>
+    <div class="warning" id="warningText">⚠️ This review doesn't seem meaningful.</div>
+
+    <label style="margin-top:12px;">Review Domain</label>
+    <select disabled>
+        <option selected>Electronics</option>
+    </select>
+
+    <button id="analyzeBtn" onclick="analyzeReview()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+        </svg>
+        Analyze Review
+    </button>
+
+    <!-- Prediction Result -->
+    <div class="result" id="resultBox">
+        <h3 id="resultLabel"></h3>
+        <div class="confidence" id="confidenceText"></div>
+    </div>
+
+    <!-- AI Analysis Section -->
+<div class="ai-analysis" id="aiAnalysisBox">
+
+    <div class="ai-analysis-header">
+
+        <div class="ai-icon">
+            🤖
+        </div>
+
+        <h3>
+            AI Analysis
+        </h3>
+
+    </div>
+
+
+    <div id="aiAnalysisText" class="ai-analysis-content">
+        Waiting for analysis...
+    </div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+const textarea = document.getElementById("reviewInput");
+const charCount = document.getElementById("charCount");
+const warningText = document.getElementById("warningText");
+
+textarea.addEventListener("input", () => {
+  charCount.innerText = textarea.value.length + " characters";
+  warningText.style.display = "none";
+});
+    
+function isMeaningful(text) {
+  const words = text.match(/[a-zA-Z]{2,}/g);
+  return words && words.length >= 3;
+}
+
+async function analyzeReview() {
+  const reviewText = textarea.value.trim();
+  const button = document.getElementById("analyzeBtn");
+  const originalButtonHTML = button.innerHTML;
+  // Hide previous prediction
+const resultBox = document.getElementById("resultBox");
+resultBox.style.visibility = "hidden";
+
+// Hide previous AI analysis
+const aiAnalysisBox = document.getElementById("aiAnalysisBox");
+setTimeout(() => {
+    aiAnalysisBox.style.visibility = "visible";
+}, 200);
+
+// Reset AI text
+document.getElementById("aiAnalysisText").textContent =
+  "Waiting for analysis...";
+
+  if (!reviewText) {
+    alert("Please enter a review");
+    return;
+  }
+
+  if (!isMeaningful(reviewText)) {
+    warningText.style.display = "block";
+    return;
+  }
+
+  button.disabled = true;
+  button.innerHTML = `<span class="loader"></span>Analyzing...`;
+
+  try {
+
+    const aiAnalysisBox = document.getElementById("aiAnalysisBox");
+    const aiAnalysisText = document.getElementById("aiAnalysisText");
+
+    // Show loading message
+    aiAnalysisBox.style.visibility = "visible";
+    aiAnalysisText.innerHTML =
+      '<div class="ai-loading">Generating AI analysis...</div>';
+
+    const response = await fetch("/predict/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: reviewText })
+    });
+
+    const data = await response.json();
+
+    const resultBox = document.getElementById("resultBox");
+    const resultLabel = document.getElementById("resultLabel");
+    const confidenceText = document.getElementById("confidenceText");
+
+    resultBox.style.visibility = "visible";
+
+    if (data.label === "OR") {
+      resultBox.className = "result genuine";
+      resultLabel.innerHTML = `
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+          </svg>
+        </span>
+        Genuine Review
+      `;
+    } else {
+      resultBox.className = "result fake";
+      resultLabel.innerHTML = `
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               width="20" height="20" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
+          </svg>
+        </span>
+        Fake Review
+      `;
+    }
+    confidenceText.innerHTML =
+    `Confidence: <span class="conf-value">${data.confidence ?? "N/A"}%</span>`;
+
+    // Display AI analysis returned by backend
+    aiAnalysisText.textContent =
+      data.ai_analysis || "No AI analysis available.";
+
+  } catch (error) {
+    console.error(error);
+
+    document.getElementById("aiAnalysisText").innerHTML =
+      "Failed to generate AI analysis.";
+
+    alert("Error connecting to backend");
+  }
+
+  button.disabled = false;
+
+  button.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+    </svg>
+    Analyze Review
+  `;
+}
+</script>
+
+</body>
+</html>
